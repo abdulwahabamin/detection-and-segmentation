@@ -1,17 +1,18 @@
-from keras.layers import Input,SeparableConv2D
 import os
-import numpy as np
-import cv2
-from keras.models import Model
-from keras.layers import Dense, Input, Conv2D, MaxPooling2D, Dropout, Flatten, BatchNormalization,UpSampling2D,concatenate,Reshape
-from keras.optimizers import Adam
-import keras
-import tensorflow as tf
 
+import cv2
+import keras
+import numpy as np
+import tensorflow as tf
+from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, UpSampling2D, concatenate
+from keras.layers import SeparableConv2D
+from keras.models import Model
+from keras.optimizers import Adam
+from utils import rescale_box
 
 Beta=[0.011676873, 0.869083715, 0.119239412]
 Beta= np.array(Beta)
-# print(Beta)
+
 def convert_to_logits(y_pred):
     # see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525
     y_pred = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
@@ -66,22 +67,43 @@ model = Model(inputs,conv9)
 model.compile(optimizer = Adam(lr = 1e-4), loss =blance_loss, metrics = ['accuracy'])
 
 
-model.load_weights(os.path.join('SG_model','model.h5'))
+model.load_weights(os.path.join('SG_model', 'model.h5'))
+
 
 def predict_(input_img):
-    input_=np.array(cv2.imread(str(input_img)))
-    input_ = cv2.resize(input_, (256,256), interpolation = cv2.INTER_NEAREST)
-    input_=input_.reshape(1,256,256,3)
-    input_=input_/255
-    pre=model.predict(input_)
-    pre=pre.reshape(256,256,3)
-    pre=np.argmax(pre, axis=-1)
-    label = keras.utils.to_categorical(pre,3)
-    label[:,:,0]=label[:,:,1]
-    label[:,:,2]=label[:,:,1]
-    label=label*255
-    label=cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
-    ret,thresh = cv2.threshold(label,127, 255, 0)
+    original = np.array(cv2.imread(str(input_img)))
+    resized_image = cv2.resize(original, (256, 256), interpolation=cv2.INTER_NEAREST)
+    input_ = resized_image.reshape(1, 256, 256, 3)
+    input_ = input_/255
+    pre = model.predict(input_)
+    softmax_output = pre.reshape(256, 256, 3)
+    pre = np.argmax(softmax_output, axis=-1)
+    label = keras.utils.to_categorical(pre, 3)
+    label[:, :, 0] = label[:, :, 1]
+    label[:, :, 2] = label[:, :, 1]
+    label = label*255
+    label = label.astype('float32')
+    label = cv2.cvtColor(label, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(label, 127, 255, 0)
     thresh = thresh.astype(np.uint8)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    return len(contours)
+
+    bounding_boxes = list()
+    for contour in contours:
+        mask = np.zeros_like(resized_image)
+        cv2.fillPoly(mask, pts=[contour], color=(1, 1, 1))
+        # Mutiply mask with softmax output and sum over the output to add all the probabilities and then divide by
+        # total number of pixels in one channel (divide by 3 since channels are 3) to get average probability
+        trash_prob = np.sum((mask * softmax_output)[:, :, 1]) / (np.count_nonzero(mask) / 3)
+        (x, y, w, h) = cv2.boundingRect(contour)
+        xx = x + w
+        yy = y + w
+        box_coordinates = [x, y, xx, yy]
+        x, y, xx, yy = rescale_box(original, resized_image, box_coordinates)
+        bounding_boxes.append([trash_prob, x, y, xx, yy])
+
+    return bounding_boxes
+
+
+if __name__ == '__main__':
+    predict_('test.jpg')
