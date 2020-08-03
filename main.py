@@ -94,6 +94,7 @@ def predict(predict_function, base_path, folders, savedir):
             annot = predict_function(img)
             im = image.split('.')[0]
             f = open(os.path.join(savedir, folder, im + '.txt'), 'w+')
+            print(len(annotation))
             for annotation in annot:
                 f.write(annotation + '\n')
             f.close()
@@ -120,7 +121,7 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
         if confidence > confidence_threshold:
             boxes.append(str(confidence) + ' ' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
                          str(box_coordinates[2]) + ' ' + str(box_coordinates[3]))
-    print(len(boxes))
+
     #         cv2.rectangle(image, (box_coordinates[0], box_coordinates[1]), (box_coordinates[2],
     #                                                                         box_coordinates[3]),
     #                       color=(0, 0, 255), thickness=2)
