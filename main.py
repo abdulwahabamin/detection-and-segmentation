@@ -99,7 +99,8 @@ def predict(predict_function, base_path, folders, savedir):
             f.close()
 
 
-def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 0.3, overlap_threshold: Optional[float] = 0.45):
+def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 0.3,
+                       overlap_threshold: Optional[float] = 0.45):
     # image = cv2.imread(image_path)
     od_image = Image.open(image_path)
 
@@ -111,13 +112,15 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
     all_boxes.extend(sg_boxes)
     all_boxes = np.array(all_boxes)
 
-    confidence_scores, boxes = non_max_suppression(all_boxes, 0.45)
+    confidence_scores, boxes = non_max_suppression(all_boxes, overlap_threshold)
+
     boxes = list()
+
     for confidence, box_coordinates in zip(confidence_scores, boxes):
         if confidence > confidence_threshold:
             boxes.append(str(confidence) + ' ' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
                          str(box_coordinates[2]) + ' ' + str(box_coordinates[3]))
-
+    print(len(boxes))
     #         cv2.rectangle(image, (box_coordinates[0], box_coordinates[1]), (box_coordinates[2],
     #                                                                         box_coordinates[3]),
     #                       color=(0, 0, 255), thickness=2)
