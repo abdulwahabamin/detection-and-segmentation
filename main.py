@@ -10,9 +10,6 @@ from SG_model.segmentation import predict_
 from utils import non_max_suppression
 
 
-yolo = YOLO()
-
-
 def predict(base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
@@ -34,9 +31,10 @@ def predict(base_path, folders, savedir):
 
 def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 0.3,
                        overlap_threshold: Optional[float] = 0.45):
-    # image = cv2.imread(image_path)
+    image = cv2.imread(image_path)
     od_image = Image.open(image_path)
 
+    yolo = YOLO()
     od_boxes = yolo.detect_image(od_image)
     sg_boxes = predict_(image_path)
 
@@ -47,27 +45,27 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
 
     confidence_scores, boxes = non_max_suppression(all_boxes, overlap_threshold)
 
-    boxes = list()
+    predictions = list()
 
     for confidence, box_coordinates in zip(confidence_scores, boxes):
         if confidence > confidence_threshold:
-            boxes.append(str(confidence) + ' ' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
+            predictions.append(str(confidence) + ' ' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
                          str(box_coordinates[2]) + ' ' + str(box_coordinates[3]))
 
-    #         cv2.rectangle(image, (box_coordinates[0], box_coordinates[1]), (box_coordinates[2],
-    #                                                                         box_coordinates[3]),
-    #                       color=(0, 0, 255), thickness=2)
+            # cv2.rectangle(image, (box_coordinates[0], box_coordinates[1]), (box_coordinates[2],
+            #                                                                 box_coordinates[3]),
+            #               color=(0, 0, 255), thickness=2)
+            #
     #
     # cv2.imshow('filtered', image)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-    return boxes
+    return predictions
 
 
 if __name__ == '__main__':
-    # folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
-    folders = ['VOC_LUMS_1']
+    folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
     base_path = '/Ted/datasets/Garbage'
     save_dir = '/Ted/models/results/od_seg'
     if not os.path.exists(save_dir):
