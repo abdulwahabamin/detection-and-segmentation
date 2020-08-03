@@ -10,6 +10,8 @@ from SG_model.segmentation import predict_
 from utils import non_max_suppression
 
 
+yolo = YOLO()
+
 def predict(predict_function, base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
@@ -32,7 +34,6 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
     # image = cv2.imread(image_path)
     od_image = Image.open(image_path)
 
-    yolo = YOLO()
 
     od_boxes = yolo.detect_image(od_image)
     sg_boxes = predict_(image_path)
