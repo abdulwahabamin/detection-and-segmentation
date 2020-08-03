@@ -12,13 +12,13 @@ from utils import non_max_suppression
 
 def predict(predict_function, base_path, folders, savedir):
     for folder in folders:
-        images = os.listdir(os.path.join(base_path, folder))
+        images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
         images = [k for k in images if '.jpg' or '.png' in k]
         if not os.path.exists(os.path.join(savedir, folder)):
             os.mkdir(os.path.join(savedir, folder))
 
         for image in images:
-            img = os.path.join(base_path, folder, image)
+            img = os.path.join(base_path, folder, 'JPEGImages', image)
             print('testing image ' + img + '\n')
             annot = predict_function(img)
             im = image.split('.')[0]
