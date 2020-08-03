@@ -66,7 +66,8 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
 
 
 if __name__ == '__main__':
-    folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
+    # folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
+    folders = ['VOC_LUMS_1']
     base_path = '/Ted/datasets/Garbage'
     save_dir = '/Ted/models/results/od_seg'
     if not os.path.exists(save_dir):
