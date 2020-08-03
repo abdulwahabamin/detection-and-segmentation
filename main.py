@@ -51,7 +51,7 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
 
     for confidence, box_coordinates in zip(confidence_scores, boxes):
         if confidence > confidence_threshold:
-            predictions.append('garbage' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
+            predictions.append('garbage' + ' ' + str(box_coordinates[0]) + ' ' + str(box_coordinates[1]) + ' ' +
                          str(box_coordinates[2]) + ' ' + str(box_coordinates[3]))
 
             # cv2.rectangle(image, (box_coordinates[0], box_coordinates[1]), (box_coordinates[2],
