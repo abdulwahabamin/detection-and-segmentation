@@ -12,7 +12,7 @@ from utils import non_max_suppression
 
 def predict(predict_function, base_path, folders, savedir):
     for folder in folders:
-        images = os.listdir(os.path.join(base_path,folder))
+        images = os.listdir(os.path.join(base_path, folder))
         images = [k for k in images if '.jpg' or '.png' in k]
         if not os.path.exists(os.path.join(savedir, folder)):
             os.mkdir(os.path.join(savedir, folder))
@@ -63,7 +63,7 @@ def combine_predctions(image_path: str, confidence_threshold: Optional[float] = 
 if __name__ == '__main__':
     folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
     base_path = '/Ted/datasets/Garbage'
-    save_dir = '/Ted/models/results/combined'
+    save_dir = '/Ted/models/results/od_seg'
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
     predict(combine_predctions, base_path, folders, save_dir)
