@@ -12,7 +12,7 @@ import utils
 yolo = YOLO()
 
 
-def predict(prediction_function, base_path, folders, savedir):
+def predict(base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
         images = [k for k in images if '.jpg' or '.png' in k]
@@ -22,7 +22,7 @@ def predict(prediction_function, base_path, folders, savedir):
         for image in images:
             img = os.path.join(base_path, folder, 'JPEGImages', image)
             print('testing image ' + img + '\n')
-            annot = prediction_function(img)
+            annot = combine_predctions_non_max(img)
             im = image.split('.')[0]
             f = open(os.path.join(savedir, folder, im + '.txt'), 'w+')
             print(len(annot))
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         save_dir = os.path.join('/Ted/models/results/od_seg_trash_percentage', str(thresh))
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
-        predict(thresh, base_path, folders, save_dir)
+        predict_percentage(thresh, base_path, folders, save_dir)
 
     # print(combine_predctions_percentage('test.jpg', output_text_format=True, show_image=True))
     # print(combine_predctions_non_max('test.jpg'))
