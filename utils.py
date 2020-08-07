@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Union, Optional
 
 import numpy as np
 
@@ -21,7 +21,18 @@ def rescale_box(original_image: np.ndarray, resized_image: np.ndarray, box_coord
     return rescaled_box_coordinates
 
 
-def non_max_suppression(boxes, overlapThresh):
+def rescale_boxes(original_image: np.ndarray, resized_image: np.ndarray, boxes: List):
+    coord = list()
+    confidence = list()
+    for box in boxes:
+        coord.append(rescale_box(original_image, resized_image, box[1:]))
+        confidence.append(box[0])
+
+    return confidence, coord
+
+
+def non_max_suppression(boxes: List, overlapThresh: float = 0.45):
+    boxes = np.asarray(boxes)
     # if there are no boxes, return an empty list
     if len(boxes) == 0:
         return []
@@ -61,10 +72,12 @@ def non_max_suppression(boxes, overlapThresh):
         # compute the ratio of overlap
         overlap = (w * h) / area[idxs[:last]]
         # delete all indexes from the index list that have
-        idxs = np.delete(idxs, np.concatenate(([last],
-            np.where(overlap > overlapThresh)[0])))
+        idxs = np.delete(idxs, np.concatenate(([last], np.where(overlap > overlapThresh)[0])))
     # return only the bounding boxes that were picked using the
     # integer data type for rectangle coordinates
     confidence_scores = boxes[pick][:, 0]
     boxes = boxes[pick][:, 1:]
     return confidence_scores, boxes.astype("int")
+
+
+

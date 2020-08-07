@@ -88,21 +88,25 @@ def predict_(input_img):
     thresh = thresh.astype(np.uint8)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    bounding_boxes = list()
+    bounding_boxes_original = list()
+    bounding_boxes_rescaled = list()
+    trash_masks = list()
     for contour in contours:
         mask = np.zeros_like(resized_image)
         cv2.fillPoly(mask, pts=[contour], color=(1, 1, 1))
+        trash_masks.append(mask)
         # Mutiply mask with softmax output and sum over the output to add all the probabilities and then divide by
         # total number of pixels in one channel (divide by 3 since channels are 3) to get average probability
         trash_prob = np.sum((mask * softmax_output)[:, :, 1]) / (np.count_nonzero(mask) / 3)
         (x, y, w, h) = cv2.boundingRect(contour)
         xx = x + w
         yy = y + w
+        bounding_boxes_original.append([trash_prob, x, y, xx, yy])
         box_coordinates = [x, y, xx, yy]
         x, y, xx, yy = rescale_box(original, resized_image, box_coordinates)
-        bounding_boxes.append([trash_prob, x, y, xx, yy])
+        bounding_boxes_rescaled.append([trash_prob, x, y, xx, yy])
 
-    return bounding_boxes
+    return trash_masks, bounding_boxes_original, bounding_boxes_rescaled
 
 
 if __name__ == '__main__':
