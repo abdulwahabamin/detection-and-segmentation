@@ -96,6 +96,9 @@ def combine_predctions_percentage(image_path: str, trash_threshold: Optional[flo
     # Get  original boxes without rescaling
     trash_masks, sg_boxes_original, sg_boxes_rescaled = predict_(image_path)
 
+    if len(trash_masks) == 0:
+        return []
+
     # scaled down to 256 256 image size
     confid_od, od_boxes_rescaled = utils.rescale_boxes(trash_masks[0], image, od_boxes_original)
 
