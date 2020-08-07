@@ -90,6 +90,8 @@ def combine_predctions_percentage(image_path: str, trash_threshold: Optional[flo
     od_image = Image.open(image_path)
 
     od_boxes_original = yolo.detect_image(od_image)
+    if len(od_boxes_original) == 0:
+        return []
 
     # Get  original boxes without rescaling
     trash_masks, sg_boxes_original, sg_boxes_rescaled = predict_(image_path)
