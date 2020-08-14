@@ -70,7 +70,7 @@ model.compile(optimizer = Adam(lr = 1e-4), loss =blance_loss, metrics = ['accura
 model.load_weights(os.path.join('SG_model', 'model.h5'))
 
 
-def predict_(input_img):
+def predict_(input_img, save=False):
     original = np.array(cv2.imread(str(input_img)))
     resized_image = cv2.resize(original, (256, 256), interpolation=cv2.INTER_NEAREST)
     input_ = resized_image.reshape(1, 256, 256, 3)
@@ -91,6 +91,7 @@ def predict_(input_img):
     bounding_boxes_original = list()
     bounding_boxes_rescaled = list()
     trash_masks = list()
+    save_img = original.copy()
     for contour in contours:
         mask = np.zeros_like(resized_image)
         cv2.fillPoly(mask, pts=[contour], color=(1, 1, 1))
@@ -105,8 +106,12 @@ def predict_(input_img):
         box_coordinates = [x, y, xx, yy]
         x, y, xx, yy = rescale_box(original, resized_image, box_coordinates)
         bounding_boxes_rescaled.append([trash_prob, x, y, xx, yy])
-
-    return trash_masks, bounding_boxes_original, bounding_boxes_rescaled
+        if save:
+            cv2.rectangle(save_img, (x, y), (xx, yy), color=(0, 0, 255), thickness=2)
+    if save:
+        return save_img, trash_masks, bounding_boxes_original, bounding_boxes_rescaled
+    else:
+        return trash_masks, bounding_boxes_original, bounding_boxes_rescaled
 
 
 if __name__ == '__main__':

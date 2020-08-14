@@ -12,6 +12,28 @@ import utils
 yolo = YOLO()
 
 
+def predict_segmentation(base_path,folders, savedir):
+    for folder in folders:
+        images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
+        images = [k for k in images if '.jpg' or '.png' in k]
+        if not os.path.exists(os.path.join(savedir, folder)):
+            os.mkdir(os.path.join(savedir, folder))
+            os.mkdir(os.path.join(savedir, folder, 'text'))
+            os.mkdir(os.path.join(savedir, folder, 'Images'))
+
+        for image in images:
+            img = os.path.join(base_path, folder, 'JPEGImages', image)
+            print('testing image ' + img + '\n')
+            save_img, _, _, annot = predict_(img, save=True)
+            im = image.split('.')[0]
+            f = open(os.path.join(savedir, folder, 'text', im + '.txt'), 'w+')
+            cv2.imwrite(os.path.join(savedir, folder, 'Images',im + '.jpg'), save_img)
+            print(len(annot))
+            for annotation in annot:
+                f.write(annotation + '\n')
+            f.close()
+
+
 def predict(base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
@@ -48,6 +70,7 @@ def predict_percentage(trash_percentage, base_path, folders, savedir):
             for annotation in annot:
                 f.write(annotation + '\n')
             f.close()
+
 
 def combine_predctions_non_max(image_path: str, confidence_threshold: Optional[float] = 0.3,
                        overlap_threshold: Optional[float] = 0.45, show_image: Optional[bool] = False):
@@ -173,13 +196,17 @@ if __name__ == '__main__':
     folders = ['VOC_Test_Easy', 'VOC_Test_Hard']
     base_path = '/Ted/datasets/Garbage'
     main_savedir = '/Ted/models/results/od_seg_trash_percentage'
+
     if not os.path.exists(main_savedir):
         os.mkdir(main_savedir)
-    for thresh in np.arange(0, 1, 0.05):
-        save_dir = os.path.join('/Ted/models/results/od_seg_trash_percentage', str(thresh))
-        if not os.path.exists(save_dir):
-            os.mkdir(save_dir)
-        predict_percentage(thresh, base_path, folders, save_dir)
+
+    predict_segmentation(base_path, folders, main_savedir)
+
+    # for thresh in np.arange(0, 1, 0.05):
+    #     save_dir = os.path.join('/Ted/models/results/od_seg_trash_percentage', str(thresh))
+    #     if not os.path.exists(save_dir):
+    #         os.mkdir(save_dir)
+    #     predict_percentage(thresh, base_path, folders, save_dir)
 
     # print(combine_predctions_percentage('test.jpg', output_text_format=True, show_image=True))
     # print(combine_predctions_non_max('test.jpg'))
