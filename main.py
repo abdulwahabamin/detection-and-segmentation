@@ -25,15 +25,21 @@ def predict_segmentation(base_path,folders, savedir):
             img = os.path.join(base_path, folder, 'JPEGImages', image)
             print('testing image ' + img + '\n')
             save_img, _, _, annot = predict_(img, save=True)
+            predictions = list()
+            for box_coordinates in annot:
+                predictions.append('garbage' + ' ' + str(box_coordinates[0]) + " " + str(box_coordinates[1]) + ' ' +
+                                   str(box_coordinates[2]) + ' ' + str(box_coordinates[3]) + ' ' +
+                                   str(box_coordinates[4]))
+
             im = image.split('.')[0]
             f = open(os.path.join(savedir, folder, 'text', im + '.txt'), 'w+')
             cv2.imwrite(os.path.join(savedir, folder, 'Images',im + '.jpg'), save_img)
             print(len(annot))
-            for annotation in annot:
+            for annotation in predictions:
                 f.write(annotation + '\n')
             f.close()
 
-
+# Ordinary prediction with non-max suppression
 def predict(base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
@@ -52,7 +58,7 @@ def predict(base_path, folders, savedir):
                 f.write(annotation + '\n')
             f.close()
 
-
+# Prediction with percentage technique
 def predict_percentage(trash_percentage, base_path, folders, savedir):
     for folder in folders:
         images = os.listdir(os.path.join(base_path, folder, 'JPEGImages'))
@@ -190,6 +196,7 @@ def combine_predctions_percentage(image_path: str, trash_threshold: Optional[flo
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     return predictions
+
 
 
 if __name__ == '__main__':
